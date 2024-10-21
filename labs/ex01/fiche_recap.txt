@@ -1,0 +1,27 @@
+MACHINES LEARNING NOTIONS TP 1:
+
+Notion de Broadcasting :
+
+NumPy étend le vecteur mean de forme (num_features,) à un tableau de forme (num_samples, num_features) en répétant chaque moyenne le long des lignes. Cela te permet de soustraire la moyenne de chaque colonne à chaque élément de cette colonne dans x, même si mean et x n'ont pas exactement la même forme.
+
+Axis pour effectuer des moyennes que selon certaines dimensions:
+
+axis=0 représente les colonnes, donc l'opération est effectuée le long des lignes (chaque colonne est affectée).
+axis=1 représente les lignes, donc l'opération est effectuée le long des colonnes (chaque ligne est affectée).
+
+Np.std :
+
+np.std représente l'écart-type (standard deviation) d'un ensemble de données. Mathématiquement, l'écart-type est une mesure de la dispersion ou de la variabilité des valeurs autour de la moyenne d'un ensemble de données.
+
+Np.indices : 
+
+Return an array representing the indices of a grid en 2 matrices, row and column .
+Différences 1 selon ligne et 1 selon column 
+Idée pas mal mais cdist(P, Q) marche mieux en terme de temps ! donc à utiliser avec from scipy.spatial.distance import cdist
+
+
+Notions :
+
+L'objectif ici est de classifier chaque point de données xn en fonction de la vraisemblance qu'il appartienne à l'une des deux distributions gaussiennes modélisant deux classes distinctes. Autrement dit, tu veux savoir si correspond mieux à la première distribution ou à la deuxième.
+
+Interet d'utiliser la log c'est surtout d'éviter les erreurs de calcul + de manipuler plus simplement les termes en additionnant 
