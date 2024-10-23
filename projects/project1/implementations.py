@@ -17,7 +17,7 @@ def compute_loss(y,tx,w,loss_method="MSE"):
         the value of the loss (a scalar), corresponding to the input parameters w.
     """
     if loss_method == "MSE":
-        loss = np.mean((y- np.dot(tx,w))**2)
+        loss = 1/2*np.mean((y- np.dot(tx,w))**2)
     elif loss_method == "MAE":
         loss = np.mean(np.abs(y- np.dot(tx,w)))
     else:
@@ -194,8 +194,6 @@ def ridge_regression(y, tx, lambda_):
     loss = compute_loss(y, tx, w)
     return w, loss
 
-def logistic_regression(y, tx, initial_w,max_iters, gamma):
+def logistic_regression(y, tx, initial_w, max_iters, gamma):
+    """Perform logistic regression using gradient descent."""
     return gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=True)
-
-def reg_logistic_regression(y, tx, lambda_, initial_w,max_iters, gamma):
-    return gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=True, lambda_=lambda_)
