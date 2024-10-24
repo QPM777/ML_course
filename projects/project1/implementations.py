@@ -1,6 +1,5 @@
 import numpy as np
 
-
 ## Computation of loss functions
 
 def compute_loss(y,tx,w,loss_method="MSE"):
@@ -64,9 +63,10 @@ def compute_logistic_gradient(y, tx, w, lambda_=0):
         y:  shape=(N, )
         tx: shape=(N, D)
         w:  shape=(D, )
+        lambda_: a regularization term (scalar)
 
     Returns:
-        a vector of shape (D, 1)
+        a vector of shape (D, )
     """
     sigmoid_term = 1/(1+np.exp(np.dot(-tx,w)))
     gradient = -(1/len(y))*np.dot(tx.T, y - sigmoid_term)  + 2*lambda_*w
@@ -84,10 +84,12 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=False, lambd
         initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
         max_iters: a scalar denoting the total number of iterations of GD
         gamma: a scalar denoting the stepsize
+        isLogistic : boolean which is True if logistic regression
+        lambda_: a regularization term
 
     Returns:
-        losses: a list of length max_iters containing the loss value (scalar) for each iteration of GD
-        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of GD
+        w: return last w
+        loss: corresponding loss  
     """
     dict_case = {
         True: (compute_logistic_gradient, compute_logistic_loss),
@@ -97,17 +99,22 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=False, lambd
     gradient_func, loss_func = dict_case[isLogistic]
 
     ws = [initial_w]
-    losses = []
+    losses = [compute_logistic_loss(y, tx, initial_w)
+        if isLogistic
+        else compute_loss(y, tx, initial_w)]
     w = initial_w
 
     for n_iter in range(max_iters):
-        gradient = gradient_func(y, tx, w, lambda_)  
-        loss = loss_func(y, tx, w)          
-        w = w - gamma * gradient  
+        gradient = gradient_func(y, tx, w, lambda_)          
+        w = w - gamma * gradient 
+        loss = loss_func(y, tx, w)   
         ws.append(w)
         losses.append(loss)
 
-    return ws[-1], losses[-1]
+    w = ws[-1]
+    loss = losses[-1]
+
+    return w, loss 
 
 
 def stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=False):
@@ -119,10 +126,11 @@ def stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=F
         initial_w: numpy array of shape=(2, ). The initial guess (or the initialization) for the model parameters
         max_iters: a scalar denoting the total number of iterations of SGD
         gamma: a scalar denoting the stepsize
+        isLogistic : boolean which is True if logistic regression
 
     Returns:
-        losses: a list of length max_iters containing the loss value (scalar) for each iteration of SGD
-        ws: a list of length max_iters containing the model parameters as numpy arrays of shape (2, ), for each iteration of SGD
+        w: return last w
+        loss: corresponding loss 
     """
     dict_case = {
         True: (compute_logistic_gradient, compute_logistic_loss),
@@ -132,7 +140,9 @@ def stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=F
     gradient_func, loss_func = dict_case[isLogistic]
 
     ws = [initial_w]
-    losses = []
+    losses = [compute_logistic_loss(y, tx, initial_w)
+        if isLogistic
+        else compute_loss(y, tx, initial_w)]
     w = initial_w
 
     for n_iter in range(max_iters):
@@ -141,15 +151,18 @@ def stochastic_gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=F
         minibatch_tx = tx[rand_idx:rand_idx+1]
 
         gradient = gradient_func(minibatch_y, minibatch_tx, w)
+        w = w - gamma * gradient
         loss = loss_func(minibatch_y, minibatch_tx, w)
 
-        w = w - gamma * gradient
         ws.append(w)
         losses.append(loss)
     
-    return ws[-1], losses[-1]
+    w = ws[-1]
+    loss = losses[-1]
 
-# List of function 
+    return w, loss 
+
+## List of required functions
 
 def mean_squared_error_gd(y, tx, initial_w,max_iters, gamma):
     return gradient_descent(y, tx, initial_w, max_iters, gamma)
@@ -187,7 +200,6 @@ def ridge_regression(y, tx, lambda_):
         w: optimal weights, numpy array of shape(D,), D is the number of features.
     """
     reg_term = 2 * tx.shape[0] * lambda_ * np.eye(tx.shape[1])
-    
     a = tx.T.dot(tx) + reg_term
     b = tx.T.dot(y)
     w = np.linalg.solve(a, b)
@@ -195,5 +207,7 @@ def ridge_regression(y, tx, lambda_):
     return w, loss
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """Perform logistic regression using gradient descent."""
     return gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=True)
+
+def reg_logistic_regression(y, tx, lambda_, initial_w,max_iters, gamma):
+    return gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=True, lambda_=lambda_)
