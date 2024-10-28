@@ -44,7 +44,7 @@ def remove_nan_rows(x, nan_percentage=50.0):
     return x[[i for i in range(x.shape[0]) if i not in idx_to_drop], :], idx_to_drop
 
 
-def balance_data(x, y, scale=1):
+def balance_data(x, y, scale=4):
     y1_size = np.sum(y[y == 1])
     y0_balanced_size = int(y1_size * scale)
     y0_idx = np.random.choice(np.arange(0, len(y))[(y == -1).squeeze()], y0_balanced_size)
@@ -88,3 +88,4 @@ def build_all(x_train, y_train, degree_pol=1):
     x_train_full = prepare_test_data(x_train, iv_cols_idx, rm_nan_columns_idx, degree=degree_pol)
     initial_w = initialize_weights(new_x_train, "random")
     return new_x_train, new_y_train, iv_cols_idx, rm_nan_columns_idx, x_train_full, initial_w
+

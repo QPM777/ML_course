@@ -35,23 +35,23 @@ def compute_loss(y,tx,w,loss_method="MSE"):
         raise Exception("For the moment we only use MAE or MSE")
     return loss 
 
-def compute_logistic_loss(y,tx,w):
-    """compute the cost by negative log likelihood.
+
+
+def compute_logistic_loss(y, tx, w):
+    """Compute the cost by negative log likelihood.
 
     Args:
-        y:  shape=(N, )
-        tx: shape=(N, D)
-        w:  shape=(D, )
+        y: outpus/labels
+        tx: standardized inputs/features augmented with the first column filled with 1's
+        w: weights used to calculate loss
 
     Returns:
-        a non-negative loss
+        logistic loss
     """
-    assert y.shape[0] == tx.shape[0]
-    assert tx.shape[1] == w.shape[0]
 
-    y = y.reshape((-1, 1))
-    loss = np.sum(np.logaddexp(0, tx.dot(w))) - y.T.dot(tx.dot(w))
-    return np.squeeze(loss) * (1 / y.shape[0])
+    pred = sigmoid(tx.dot(w))
+    loss = -np.sum(y * np.log(pred + 1e-15) + (1 - y) * np.log(1 - pred + 1e-15))
+    return loss / y.shape[0]
 
 ### Computation of gradients 
 
@@ -82,8 +82,9 @@ def compute_logistic_gradient(y, tx, w, lambda_=0):
     Returns:
         a vector of shape (D, )
     """
-    pred = sigmoid(tx.dot(w))
-    return tx.T.dot(pred - y) * (1 / y.shape[0])
+    sigmoid_term = 1/(1+np.exp(np.dot(-tx,w)))
+    gradient = -(1/len(y))*np.dot(tx.T, y - sigmoid_term)  + 2*lambda_*w
+    return gradient
 
 
 ## Gradient descent algorithms
@@ -111,24 +112,16 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=False, lambd
 
     gradient_func, loss_func = dict_case[isLogistic]
     
-
-    ws = [initial_w]
-    losses = [compute_logistic_loss(y, tx, initial_w)
-        if isLogistic
-        else compute_loss(y, tx, initial_w)]
+    y = np.where(y == -1, 0, y)
     w = initial_w
-    print("n_iter:", 0, "loss: " ,losses[-1])
+    loss = loss_func(y,tx,initial_w)
+    print("n_iter:", 0, "loss: " ,loss)
     for n_iter in range(1,max_iters+1):
         gradient = gradient_func(y, tx, w, lambda_)          
         w = w - gamma * gradient 
         loss = loss_func(y, tx, w)   
-        ws.append(w)
-        losses.append(loss)
         if n_iter % 20 == 0:
-            print("n_iter:", n_iter, "loss: " ,losses[-1])
-
-    w = ws[-1]
-    loss = losses[-1]
+            print("n_iter:", n_iter, "loss: " ,loss)
 
     return w, loss 
 
