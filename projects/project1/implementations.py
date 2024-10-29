@@ -112,7 +112,7 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, isLogistic=False, lambd
 
     gradient_func, loss_func = dict_case[isLogistic]
     
-    y = np.where(y == -1, 0, y)
+    y = (y + 1) / 2
     w = initial_w
     loss = loss_func(y,tx,initial_w)
     print("n_iter:", 0, "loss: " ,loss)
